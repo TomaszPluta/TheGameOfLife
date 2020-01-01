@@ -44,10 +44,16 @@ class Universe{
 		if (isAlive(currentPoint)){
 			if (liveNeighbourCount == 2 || liveNeighbourCount == 3){
 				live(currentPoint);
+				return;
 			}
-
-
 		}
+		if (!isAlive(currentPoint)){
+			if (liveNeighbourCount == 3){
+				live(currentPoint);
+				return;
+			}
+		}
+		die(currentPoint);
 	}
 
 public:
