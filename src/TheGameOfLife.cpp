@@ -5,6 +5,7 @@
 
 
 using point = std::pair<int, int>;
+//using cell = std::pair<point, bool>;
 
 class Universe{
 	std::map<point, bool> grid;
@@ -26,12 +27,35 @@ class Universe{
 		}
 		return liveNeighbourCount;
 	}
+	bool isAlive(point currentPoint){
+		return grid[ std::make_pair(currentPoint.first, currentPoint.second)];
+	}
+
+	void die(point currentPoint){
+		grid[ std::make_pair(currentPoint.first, currentPoint.second)] = false;
+	}
+
+	void live(point currentPoint){
+		grid[ std::make_pair(currentPoint.first, currentPoint.second)] = true;
+	}
+
+
+	void liveOrDie(point currentPoint, int liveNeighbourCount){
+		if (isAlive(currentPoint)){
+			if (liveNeighbourCount == 2 || liveNeighbourCount == 3){
+				live(currentPoint);
+			}
+
+
+		}
+	}
 
 public:
 
 	void play(){
 		point currentPoint(2,2);
 		int liveNeighbourCount = getLiveNeighbours(currentPoint);
+
 	}
 
 };
