@@ -7,8 +7,17 @@
 using point = std::pair<int, int>;
 //using cell = std::pair<point, bool>;
 
+constexpr int MIN_LIVE_NEIGHBOURS_TO_SURVIVE = 2;
+constexpr int MAX_LIVE_NEIGHBOURS_TO_SURVIVE = 3;
+constexpr int LIVE_NEIGHBOURS_TO_ALIVE = 3;
+
+constexpr int GRID_SIZE_X = 10;
+constexpr int GRID_SIZE_Y = 10;
+
 class Universe{
-	std::map<point, bool> grid;
+	int sizeX_;
+	int sizeY_;
+	std::map<point, bool> wordGrid;
 
 	int getLiveNeighbours(point currentPoint){
 		int liveNeighbourCount = 0;
@@ -18,8 +27,9 @@ class Universe{
 				if (neighbour == currentPoint){
 					continue;
 				}
-				std::cout<<(currentPoint.first+ x)<<":"<<(currentPoint.second + y)<<std::endl;
-				if (grid[neighbour]){
+
+//				std::cout<<(currentPoint.first+ x)<<":"<<(currentPoint.second + y)<<std::endl;
+				if (wordGrid[neighbour]){
 					liveNeighbourCount++;
 					std::cout<<"*"<<std::endl;
 				}
@@ -28,40 +38,65 @@ class Universe{
 		return liveNeighbourCount;
 	}
 	bool isAlive(point currentPoint){
-		return grid[ std::make_pair(currentPoint.first, currentPoint.second)];
+		return wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)];
 	}
 
 	void die(point currentPoint){
-		grid[ std::make_pair(currentPoint.first, currentPoint.second)] = false;
+		wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)] = false;
 	}
 
 	void live(point currentPoint){
-		grid[ std::make_pair(currentPoint.first, currentPoint.second)] = true;
+		wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)] = true;
 	}
 
 
 	void liveOrDie(point currentPoint, int liveNeighbourCount){
 		if (isAlive(currentPoint)){
-			if (liveNeighbourCount == 2 || liveNeighbourCount == 3){
+			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE || liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
 				live(currentPoint);
+				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"alive live!"<<std::endl;
 				return;
 			}
 		}
 		if (!isAlive(currentPoint)){
-			if (liveNeighbourCount == 3){
+			if (liveNeighbourCount == LIVE_NEIGHBOURS_TO_ALIVE){
+				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"died live!"<<std::endl;
 				live(currentPoint);
 				return;
 			}
 		}
+
+		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"is dead"<<std::endl;
 		die(currentPoint);
 	}
 
 public:
 
-	void play(){
-		point currentPoint(2,2);
-		int liveNeighbourCount = getLiveNeighbours(currentPoint);
+	void reset(int maxX, int maxY){
+			for (int x = 0; x <  maxX; x++){
+				for (int y = 0; y <  maxY; y++){
+					point newpoint(x,y);
+					wordGrid[newpoint] = false;
+				}
+			}
+		}
 
+	Universe(int sizeX, int sizeY) : sizeX_{sizeX}, sizeY_{sizeY} {
+		reset(sizeX_, sizeY_);
+	}
+
+
+
+	void play(void){
+		wordGrid[ std::make_pair(3,3)] = true;
+		wordGrid[ std::make_pair(3,4)] = true;
+		wordGrid[ std::make_pair(3,5)] = true;
+		wordGrid[ std::make_pair(7,1)] = true;
+		wordGrid[ std::make_pair(7,1)] = true;
+
+		for (const auto & [point, state] : wordGrid){
+				liveOrDie(point, getLiveNeighbours(point));
+		}
 	}
 
 };
@@ -72,7 +107,7 @@ public:
 
 int main() {
 
-	Universe u;
+	Universe u(GRID_SIZE_X, GRID_SIZE_Y);
 	u.play();
 
 	return 0;
