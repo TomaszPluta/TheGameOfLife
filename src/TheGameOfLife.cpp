@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 #include <utility>
-
+#include <random>
 
 
 using point = std::pair<int, int>;
@@ -86,14 +86,13 @@ public:
 	}
 
 
+	void randomizeCells(){
+		  std::random_device rd;
+		  //TODO::...
+	}
 
 	void play(void){
-		wordGrid[ std::make_pair(3,3)] = true;
-		wordGrid[ std::make_pair(3,4)] = true;
-		wordGrid[ std::make_pair(3,5)] = true;
-		wordGrid[ std::make_pair(7,1)] = true;
-		wordGrid[ std::make_pair(7,1)] = true;
-
+		randomizeCells();
 		for (const auto & [point, state] : wordGrid){
 				liveOrDie(point, getLiveNeighbours(point));
 		}
