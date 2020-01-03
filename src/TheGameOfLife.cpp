@@ -24,7 +24,9 @@ class Universe{
 		for (int x =-1; x <=1; x++){
 			for (int y =-1; y <=1; y++){
 				point neighbour = std::make_pair(currentPoint.first+ x, currentPoint.second + y);
-				if (neighbour == currentPoint){
+				if ((neighbour == currentPoint)
+						|| (neighbour.first < 0) || (neighbour.first > sizeX_)
+						|| (neighbour.second < 0) || (neighbour.second > sizeY_)){
 					continue;
 				}
 
@@ -88,7 +90,7 @@ public:
 
 	void randomizeCells(){
 		  std::random_device rd;
-		  //TODO::...
+		  //TODO:: ...
 	}
 
 	void play(void){
