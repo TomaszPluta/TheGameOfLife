@@ -19,14 +19,16 @@ class Universe{
 	int sizeY_;
 	std::map<point, bool> wordGrid;
 
+	bool isOutsideGrid(point point){
+		return ((point.first < 0) || (point.first > sizeX_) || (point.second < 0) || (point.second > sizeY_));
+	}
+
 	int getLiveNeighbours(point currentPoint){
 		int liveNeighbourCount = 0;
 		for (int x =-1; x <=1; x++){
 			for (int y =-1; y <=1; y++){
 				point neighbour = std::make_pair(currentPoint.first+ x, currentPoint.second + y);
-				if ((neighbour == currentPoint)
-						|| (neighbour.first < 0) || (neighbour.first > sizeX_)
-						|| (neighbour.second < 0) || (neighbour.second > sizeY_)){
+				if ((neighbour == currentPoint) || isOutsideGrid(neighbour)){
 					continue;
 				}
 
@@ -56,19 +58,19 @@ class Universe{
 		if (isAlive(currentPoint)){
 			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE || liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
 				live(currentPoint);
-				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"alive live!"<<std::endl;
+				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
 				return;
 			}
 		}
 		if (!isAlive(currentPoint)){
 			if (liveNeighbourCount == LIVE_NEIGHBOURS_TO_ALIVE){
-				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"died live!"<<std::endl;
+				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
 				live(currentPoint);
 				return;
 			}
 		}
 
-		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<"is dead"<<std::endl;
+		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
 		die(currentPoint);
 	}
 
