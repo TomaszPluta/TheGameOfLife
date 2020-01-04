@@ -2,6 +2,7 @@
 #include <map>
 #include <utility>
 #include <random>
+#include <algorithm>
 
 
 using point = std::pair<int, int>;
@@ -27,30 +28,28 @@ class Universe{
 		int liveNeighbourCount = 0;
 		for (int x =-1; x <=1; x++){
 			for (int y =-1; y <=1; y++){
-				point neighbour = std::make_pair(currentPoint.first+ x, currentPoint.second + y);
+				point neighbour = {currentPoint.first+ x, currentPoint.second + y};
 				if ((neighbour == currentPoint) || isOutsideGrid(neighbour)){
 					continue;
 				}
-
 //				std::cout<<(currentPoint.first+ x)<<":"<<(currentPoint.second + y)<<std::endl;
 				if (wordGrid[neighbour]){
 					liveNeighbourCount++;
-					std::cout<<"*"<<std::endl;
 				}
 			}
 		}
 		return liveNeighbourCount;
 	}
 	bool isAlive(point currentPoint){
-		return wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)];
+		return wordGrid[ {currentPoint.first, currentPoint.second}];
 	}
 
 	void die(point currentPoint){
-		wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)] = false;
+		wordGrid[ {currentPoint.first, currentPoint.second}] = false;
 	}
 
 	void live(point currentPoint){
-		wordGrid[ std::make_pair(currentPoint.first, currentPoint.second)] = true;
+		wordGrid[ {currentPoint.first, currentPoint.second}] = true;
 	}
 
 
@@ -74,31 +73,42 @@ class Universe{
 		die(currentPoint);
 	}
 
+	bool generateRandomCellState(double probability = 0.5){
+			std::random_device rd;
+			std::default_random_engine gen(rd());
+			std::bernoulli_distribution distr(probability);
+			return distr(rd);
+		}
+
+	void randomizeCells(){
+		for (auto & [point, state] : wordGrid){
+			state = generateRandomCellState();
+		}
+	}
+
 public:
 
 	void reset(int maxX, int maxY){
-			for (int x = 0; x <  maxX; x++){
-				for (int y = 0; y <  maxY; y++){
-					point newpoint(x,y);
-					wordGrid[newpoint] = false;
-				}
-			}
-		}
+		randomizeCells();
+	}
 
 	Universe(int sizeX, int sizeY) : sizeX_{sizeX}, sizeY_{sizeY} {
 		reset(sizeX_, sizeY_);
+		for (int x = 0; x <  sizeX_; x++){
+			for (int y = 0; y <  sizeY_; y++){
+				point newpoint(x,y);
+				wordGrid[newpoint] = generateRandomCellState();
+			}
+		}
 	}
 
 
-	void randomizeCells(){
-		  std::random_device rd;
-		  //TODO:: ...
-	}
-
-	void play(void){
+	void play(int iteration){
 		randomizeCells();
-		for (const auto & [point, state] : wordGrid){
-				liveOrDie(point, getLiveNeighbours(point));
+		while (iteration--){
+			for (const auto & [point, state] : wordGrid){
+					liveOrDie(point, getLiveNeighbours(point));
+			}
 		}
 	}
 
@@ -111,7 +121,7 @@ public:
 int main() {
 
 	Universe u(GRID_SIZE_X, GRID_SIZE_Y);
-	u.play();
+	u.play(1);
 
 	return 0;
 }
