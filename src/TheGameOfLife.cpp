@@ -57,19 +57,19 @@ class Universe{
 		if (isAlive(currentPoint)){
 			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE || liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
 				live(currentPoint);
-				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
+			//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
 				return;
 			}
 		}
 		if (!isAlive(currentPoint)){
 			if (liveNeighbourCount == LIVE_NEIGHBOURS_TO_ALIVE){
-				std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
+		//		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
 				live(currentPoint);
 				return;
 			}
 		}
 
-		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
+	//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
 		die(currentPoint);
 	}
 
@@ -84,6 +84,20 @@ class Universe{
 		for (auto & [point, state] : wordGrid){
 			state = generateRandomCellState();
 		}
+	}
+
+	void print (){ //poc
+		for (auto & [point, state] : wordGrid){
+				if (state){
+					std::cout<<"O";
+				} else {
+					std::cout<<"X";
+				}
+				if (point.second == sizeY_){
+					std::cout<<std::endl;
+				}
+			}
+		std::cout<<std::endl;
 	}
 
 public:
@@ -109,6 +123,7 @@ public:
 			for (const auto & [point, state] : wordGrid){
 					liveOrDie(point, getLiveNeighbours(point));
 			}
+			print();
 		}
 	}
 
@@ -121,7 +136,7 @@ public:
 int main() {
 
 	Universe u(GRID_SIZE_X, GRID_SIZE_Y);
-	u.play(1);
+	u.play(3);
 
 	return 0;
 }
