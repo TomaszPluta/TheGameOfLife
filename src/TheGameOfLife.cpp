@@ -3,7 +3,9 @@
 #include <utility>
 #include <random>
 #include <algorithm>
-
+#include <vector>
+#include <iterator>
+#include <queue>
 
 using point = std::pair<int, int>;
 //using cell = std::pair<point, bool>;
@@ -18,7 +20,9 @@ constexpr int GRID_SIZE_Y = 10;
 class Universe{
 	int sizeX_;
 	int sizeY_;
-	std::map<point, bool> wordGrid;
+	std::map<point, bool> worldGrid;
+	std::vector<std::deque<bool>> historicalData;
+
 
 	bool isOutsideGrid(point point){
 		return ((point.first < 0) || (point.first > sizeX_) || (point.second < 0) || (point.second > sizeY_));
@@ -32,8 +36,7 @@ class Universe{
 				if ((neighbour == currentPoint) || isOutsideGrid(neighbour)){
 					continue;
 				}
-//				std::cout<<(currentPoint.first+ x)<<":"<<(currentPoint.second + y)<<std::endl;
-				if (wordGrid[neighbour]){
+				if (worldGrid[neighbour]){
 					liveNeighbourCount++;
 				}
 			}
@@ -41,15 +44,15 @@ class Universe{
 		return liveNeighbourCount;
 	}
 	bool isAlive(point currentPoint){
-		return wordGrid[ {currentPoint.first, currentPoint.second}];
+		return worldGrid[ {currentPoint.first, currentPoint.second}];
 	}
 
 	void die(point currentPoint){
-		wordGrid[ {currentPoint.first, currentPoint.second}] = false;
+		worldGrid[ {currentPoint.first, currentPoint.second}] = false;
 	}
 
 	void live(point currentPoint){
-		wordGrid[ {currentPoint.first, currentPoint.second}] = true;
+		worldGrid[ {currentPoint.first, currentPoint.second}] = true;
 	}
 
 
@@ -57,47 +60,48 @@ class Universe{
 		if (isAlive(currentPoint)){
 			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE || liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
 				live(currentPoint);
-			//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
+				//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
 				return;
 			}
 		}
 		if (!isAlive(currentPoint)){
 			if (liveNeighbourCount == LIVE_NEIGHBOURS_TO_ALIVE){
-		//		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
+				//		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
 				live(currentPoint);
 				return;
 			}
 		}
 
-	//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
+		//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
 		die(currentPoint);
 	}
 
 	bool generateRandomCellState(double probability = 0.5){
-			std::random_device rd;
-			std::default_random_engine gen(rd());
-			std::bernoulli_distribution distr(probability);
-			return distr(rd);
-		}
+		std::random_device rd;
+		std::default_random_engine gen(rd());
+		std::bernoulli_distribution distr(probability);
+		return distr(rd);
+	}
 
 	void randomizeCells(){
-		for (auto & [point, state] : wordGrid){
+		for (auto & [point, state] : worldGrid){
 			state = generateRandomCellState();
 		}
 	}
 
 	void print (){ //poc
-		for (auto & [point, state] : wordGrid){
-				if (state){
-					std::cout<<"O";
-				} else {
-					std::cout<<"X";
-				}
-				if (point.second == sizeY_){
-					std::cout<<std::endl;
-				}
+		for (auto & [point, state] : worldGrid){
+			if (state){
+				std::cout<<"O";
+			} else {
+				std::cout<<"X";
 			}
+			if (point.second == sizeY_){
+				std::cout<<std::endl;
+			}
+		}
 		std::cout<<std::endl;
+
 	}
 
 public:
@@ -111,7 +115,7 @@ public:
 		for (int x = 0; x <  sizeX_; x++){
 			for (int y = 0; y <  sizeY_; y++){
 				point newpoint(x,y);
-				wordGrid[newpoint] = generateRandomCellState();
+				worldGrid[newpoint] = generateRandomCellState();
 			}
 		}
 	}
@@ -120,14 +124,53 @@ public:
 	void play(int iteration){
 		randomizeCells();
 		while (iteration--){
-			for (const auto & [point, state] : wordGrid){
-					liveOrDie(point, getLiveNeighbours(point));
+			for (const auto & [point, state] : worldGrid){
+				liveOrDie(point, getLiveNeighbours(point));
 			}
 			print();
+			saveStage();
 		}
 	}
 
+	std::vector<std::pair<point, bool>> getWorldAsLinear(){
+		std::vector<std::pair<point, bool>> v (worldGrid.begin(), worldGrid.end());
+		return v;
+	}
+
+
+
+	void saveStage (void){
+		std::vector<std::pair<point, bool>> serializedCells = getWorldAsLinear();
+		std::deque<bool> cellsStatus;
+		cellsStatus.resize(serializedCells.size());
+
+		std::transform(serializedCells.begin(), serializedCells.end(), cellsStatus.begin(),
+				[](std::pair<point, bool> cell){
+
+			//debug print
+			std::cout<<cell.second;
+			return cell.second;
+		});
+		//debug print
+		std::cout<<std::endl;
+		std::cout<<std::endl;
+
+		historicalData.resize(serializedCells.size());
+		std::deque<bool>::iterator fromIter = cellsStatus.begin();
+		for (std::vector<std::deque<bool>>::iterator toIt = historicalData.begin(); toIt !=historicalData.end(); toIt++){
+			(*toIt).push_back(*fromIter++);
+		}
+	}
+
+	void printCellHistory(int cellNumber){
+		std::copy(historicalData[cellNumber].begin(), historicalData[cellNumber].end(), std::ostream_iterator<bool> {std::cout, ","});
+		std::cout<<std::endl;
+	}
+
+
+
 };
+
 
 
 
@@ -136,7 +179,8 @@ public:
 int main() {
 
 	Universe u(GRID_SIZE_X, GRID_SIZE_Y);
-	u.play(3);
+	u.play(10);
+	std::cout<<std::endl;
 
 	return 0;
 }
