@@ -87,9 +87,6 @@ class Universe{
 			}
 		}
 
-		if (isAlive(currentPoint)){
-				std::cout<<currentPoint.first<< "," << currentPoint.second<<std::endl;
-		}
 		die(currentPoint);
 	}
 
