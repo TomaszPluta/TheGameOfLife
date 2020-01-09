@@ -6,6 +6,8 @@
 #include <vector>
 #include <iterator>
 #include <queue>
+#include <sstream>
+#include <thread>
 
 using point = std::pair<int, int>;
 //using cell = std::pair<point, bool>;
@@ -16,6 +18,21 @@ constexpr int LIVE_NEIGHBOURS_TO_ALIVE = 3;
 
 constexpr int GRID_SIZE_X = 10;
 constexpr int GRID_SIZE_Y = 10;
+
+
+   static inline std::string clrscr(void)
+      {
+
+	   enum ANSI : char { ESC = 27 };
+         std::stringstream ss;
+         ss << static_cast<char>(ESC) << "[H"   // home
+            << static_cast<char>(ESC) << "[2J"; // clrbos
+         return(ss.str());
+      }
+
+   //              r/c are 0 based------v------v------0 based
+
+
 
 class Universe{
 	int sizeX_;
@@ -58,21 +75,21 @@ class Universe{
 
 	void liveOrDie(point currentPoint, int liveNeighbourCount){
 		if (isAlive(currentPoint)){
-			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE || liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
+			if (liveNeighbourCount >= MIN_LIVE_NEIGHBOURS_TO_SURVIVE && liveNeighbourCount <= MAX_LIVE_NEIGHBOURS_TO_SURVIVE){
 				live(currentPoint);
-				//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" alive live!"<<std::endl;
 				return;
 			}
 		}
 		if (!isAlive(currentPoint)){
 			if (liveNeighbourCount == LIVE_NEIGHBOURS_TO_ALIVE){
-				//		std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" died live!"<<std::endl;
 				live(currentPoint);
 				return;
 			}
 		}
 
-		//	std::cout<<(currentPoint.first)<<":"<<(currentPoint.second)<<" is dead"<<std::endl;
+		if (isAlive(currentPoint)){
+				std::cout<<currentPoint.first<< "," << currentPoint.second<<std::endl;
+		}
 		die(currentPoint);
 	}
 
@@ -92,9 +109,9 @@ class Universe{
 	void print (){ //poc
 		for (auto & [point, state] : worldGrid){
 			if (state){
-				std::cout<<"O";
+				std::cout<<"*";
 			} else {
-				std::cout<<"X";
+				std::cout<<" ";
 			}
 			if (point.second == sizeY_){
 				std::cout<<std::endl;
@@ -127,10 +144,18 @@ public:
 			for (const auto & [point, state] : worldGrid){
 				liveOrDie(point, getLiveNeighbours(point));
 			}
+
+			std::cout << clrscr() << std::flush; // clears the screen
+
+
 			print();
 			saveStage();
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(400));
 		}
 	}
+
+
 
 	std::vector<std::pair<point, bool>> getWorldAsLinear(){
 		std::vector<std::pair<point, bool>> v (worldGrid.begin(), worldGrid.end());
@@ -148,7 +173,7 @@ public:
 				[](std::pair<point, bool> cell){
 
 			//debug print
-			std::cout<<cell.second;
+		//	std::cout<<cell.second;
 			return cell.second;
 		});
 		//debug print
@@ -175,12 +200,22 @@ public:
 
 
 
-
 int main() {
+
 
 	Universe u(GRID_SIZE_X, GRID_SIZE_Y);
 	u.play(10);
 	std::cout<<std::endl;
 
+	u.printCellHistory(0);
+	u.printCellHistory(1);
+	u.printCellHistory(2);
+	u.printCellHistory(3);
+	u.printCellHistory(4);
+	u.printCellHistory(5);
+	u.printCellHistory(6);
+	u.printCellHistory(7);
+	u.printCellHistory(8);
+	u.printCellHistory(9);
 	return 0;
 }
